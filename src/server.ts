@@ -1,11 +1,19 @@
 import app from './app';
-import dotenv from 'dotenv';
+import { env } from './config/env';
+import prisma from './db';
 
-dotenv.config();
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`\n🚀 Serveur backend démarré sur : http://localhost:${PORT}`);
-  console.log(`🩺 Vérification de santé : http://localhost:${PORT}/api/health\n`);
+const server = app.listen(env.PORT, () => {
+  console.log(`\n🚀 Serveur backend démarré sur : http://localhost:${env.PORT}`);
+  console.log(`🩺 Vérification de santé : http://localhost:${env.PORT}/api/health\n`);
 });
+
+const shutdown = (signal: string) => {
+  console.log(`\n${signal} reçu, arrêt du serveur...`);
+  server.close(async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+};
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

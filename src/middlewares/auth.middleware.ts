@@ -1,29 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env';
+import { HttpError } from '../errors';
+import type { Filiere } from '../generated/prisma/client';
 
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    userId: string;
-    filiere: string;
-  };
-}
+export const authenticateToken = (req: Request, _res: Response, next: NextFunction) => {
+  const [scheme, token] = (req.headers.authorization ?? '').split(' ');
 
-export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
-
-  if (!token) {
-    return res.status(401).json({ error: 'Accès non autorisé : Token manquant' });
+  if (scheme !== 'Bearer' || !token) {
+    throw new HttpError(401, 'Accès non autorisé : token manquant');
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as {
+    const decoded = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload & {
       userId: string;
-      filiere: string;
+      filiere: Filiere;
     };
-    req.user = decoded;
+    req.user = { userId: decoded.userId, filiere: decoded.filiere };
     next();
-  } catch (error) {
-    return res.status(403).json({ error: 'Token invalide ou expiré' });
+  } catch {
+    throw new HttpError(401, 'Token invalide ou expiré');
   }
+};
+
+/** À utiliser après authenticateToken : garantit que req.user est défini. */
+export const requireUser = (req: Request) => {
+  if (!req.user) throw new HttpError(401, 'Non authentifié');
+  return req.user;
 };

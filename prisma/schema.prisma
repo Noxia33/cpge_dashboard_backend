@@ -1,0 +1,76 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Filiere {
+  MPSI
+  MP
+  MPI
+  PCSI
+  PC
+  PSI
+  PTSI
+  PT
+  TSI
+  BCPST
+  ECG
+}
+
+enum Statut {
+  A_FAIRE
+  EN_COURS
+  MAITRISE
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  filiere      Filiere
+  createdAt    DateTime      @default(now())
+  progressions Progression[]
+}
+
+model Chapter {
+  id           String        @id @default(cuid())
+  title        String
+  subject      String
+  filiere      Filiere
+  position     Int           @default(0)
+  progressions Progression[]
+
+  @@unique([filiere, subject, title])
+  @@index([filiere])
+}
+
+model Progression {
+  id            String   @id @default(cuid())
+  userId        String
+  chapterId     String
+  statut        Statut   @default(A_FAIRE)
+  timeSpent     Int      @default(0) // minutes
+  exercisesDone Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chapterId])
+  @@index([chapterId])
+}
+
+model School {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  city     String
+  filieres Filiere[]
+  website  String?
+}

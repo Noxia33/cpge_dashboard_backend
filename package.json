@@ -1,14 +1,18 @@
 {
-  "name": "projet",
+  "name": "cpge-dashboard-backend",
   "version": "1.0.0",
-  "description": "��#\u0000 \u0000c\u0000p\u0000g\u0000e\u0000_\u0000d\u0000a\u0000s\u0000h\u0000b\u0000o\u0000a\u0000r\u0000d\u0000_\u0000b\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000\r\u0000 \u0000",
-  "main": "index.js",
+  "description": "API backend du dashboard de suivi de révisions CPGE",
+  "main": "dist/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "prisma skills sync || exit 0",
-    "dev": "ts-node-dev src/app.ts",
-    "generate": "prisma generate"
-
+    "dev": "tsx watch src/server.ts",
+    "build": "prisma generate && tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "repository": {
     "type": "git",
@@ -23,24 +27,28 @@
   },
   "homepage": "https://github.com/Noxia33/cpge_dashboard_backend#readme",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.1",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^26.6.2",
-    "prisma": "^8.0.0-rc.15",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
+    "@types/node": "^22.20.4",
+    "@types/pg": "^8.23.1",
+    "prisma": "^7.10.0",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
-    
+  },
+  "engines": {
+    "node": ">=20"
   }
-  
 }
